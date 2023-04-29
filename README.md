@@ -1,6 +1,6 @@
-# DinoSpace
+# DinoScale
 
-DinoSpace is a lightweight C++ backend web library that allows you to quickly create and deploy web applications. It provides an easy-to-use API for creating and managing routes, handling HTTP requests and responses, and listening for incoming connections.
+DinoScale is a lightweight C++ backend web library that allows you to quickly create and deploy web applications. It provides an easy-to-use API for creating and managing routes, handling HTTP requests and responses, and listening for incoming connections.
 
 ## Features
 
@@ -12,7 +12,7 @@ DinoSpace is a lightweight C++ backend web library that allows you to quickly cr
 
 ## Getting Started
 
-To get started with DinoSpace, you need to download and include "server.hpp" inside the file containing main function. Once you have included dinospace, you can use the following code snippet to create a basic server:
+To get started with DinoScale, you need to download and include "server.hpp" inside the file containing main function. Once you have included DinoScale, you can use the following code snippet to create a basic server:
 
 ```cpp
 DinoScale::DinoScale ds = DinoScale::DinoScale();
@@ -33,4 +33,4 @@ g++ -o main.exe main.cpp server.cpp -lsw2_32
 
 ## Conclusion
 
-DinoSpace is a lightweight and easy-to-use C++ backend web library that allows you to quickly create and deploy web applications. It provides a simple and intuitive API for creating and managing routes, handling HTTP requests and responses, and serving static files.
+DinoScale is a lightweight and easy-to-use C++ backend web library that allows you to quickly create and deploy web applications. It provides a simple and intuitive API for creating and managing routes, handling HTTP requests and responses, and serving static files.
