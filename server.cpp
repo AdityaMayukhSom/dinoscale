@@ -5,19 +5,28 @@
 #include <ws2tcpip.h>
 
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
+const std::unordered_map<std::string, byte> DinoScale::DinoScale::httpVerbToNumberMapping = {
+    {"GET", 0},
+    {"POST", 1},
+    {"PUT", 2},
+    {"DELETE", 3}};
+
 DinoScale::DinoScale::DinoScale(
     const std::string machineIpAddress,
-    const u_short port = 3000)
+    const u_short port)
     : machineIpAddress(machineIpAddress) {
     socketAddress.sin_family = AF_INET;
     socketAddress.sin_port = htons(port);
     socketAddress.sin_addr.s_addr = inet_addr(this->machineIpAddress.c_str());
     socketAddressLength = sizeof(socketAddress);
+
+    // routeToFileMapList = new std::unordered_map<std::string, std::string>[httpVerbToNumberMapping.size()];
 
     int serverStartingError = startServer();
     if (serverStartingError != 0) {
@@ -45,7 +54,7 @@ int DinoScale::DinoScale::startServer() {
         return 1;
     }
 
-    err = bind(sock, (sockaddr *)&socketAddress, socketAddressLength);
+    err = bind(sock, (sockaddr*)&socketAddress, socketAddressLength);
     if (err < 0) {
         exitWithError("cannot connect socket to address");
         return 1;
@@ -68,7 +77,7 @@ void DinoScale::DinoScale::startListening() {
 
     int bytesRecieved;
     while (true) {
-        log("----- Waiting for a new connection -----\n");
+        log("----- Waiting for a new connection -----");
         // waits until a request comes to the server
         acceptConnection();
 
@@ -79,9 +88,12 @@ void DinoScale::DinoScale::startListening() {
             exitWithError("failed to receive bytes from client socket connection");
         }
 
-        oss.str("");
-        oss.clear();
-        oss << "------ Received Request from client ------\n";
+        std::string method, route, headers, body;
+        parseHttpRequest(buffer, method, route, headers, body);
+        prepareResponse(method, route, body);
+
+        std::ostringstream oss;
+        oss << "------ Received Request from client ------";
         log(oss.str());
 
         sendResponse();
@@ -89,7 +101,7 @@ void DinoScale::DinoScale::startListening() {
 }
 
 void DinoScale::DinoScale::acceptConnection() {
-    newSocket = accept(sock, (sockaddr *)&socketAddress, &socketAddressLength);
+    newSocket = accept(sock, (sockaddr*)&socketAddress, &socketAddressLength);
     if (newSocket < 0) {
         std::ostringstream oss;
         oss << "Server failed to accept incoming connection from ADDRESS: "
@@ -99,17 +111,78 @@ void DinoScale::DinoScale::acceptConnection() {
     }
 }
 
+void DinoScale::DinoScale::parseHttpRequest(const char* buffer, std::string& method, std::string& route,
+                                            std::string& headers, std::string& body) {
+    std::string request(buffer);
+    std::size_t pos = request.find("\r\n\r\n");
+
+    if (pos == std::string::npos) {
+        exitWithError("invalid request: no end of headers found");
+    }
+
+    headers = request.substr(0, pos);
+    body = request.substr(pos + 4);  // Skip the "\r\n\r\n" sequence
+    std::string line = headers.substr(0, request.find_first_of('\r'));
+    std::istringstream iss(line);
+    std::string value;
+    int count = 0;
+    while (std::getline(iss, value, ' ')) {
+        log("value : " + value);
+        if (count == 0) {
+            // for the first iteration, the output is the http method
+            method = value;
+        } else if (count == 1) {
+            // for the second method the output is route
+            route = value;
+        } else {
+            // currently have no idea what is the use of the other parameters of header
+            break;
+        }
+        count++;
+    }
+}
+
+void DinoScale::DinoScale::prepareResponse(std::string method, std::string route, std::string body) {
+    if (method.compare("GET") == 0) {
+        std::string htmlFile;
+        std::ostringstream oss;
+        std::stringstream strStream;
+        std::ifstream requestedFile;
+        std::string fileName = "error.html";
+
+        oss << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: ";
+
+        int verbPosition = httpVerbToNumberMapping.at(method);
+        std::unordered_map<std::string, std::string>& routeToFileMap = routeToFileMapList[verbPosition];
+
+        for (auto routeToFile : routeToFileMap)
+            std::cout << routeToFile.first << " " << routeToFile.second << std::endl;
+
+        log("route is " + route + ".");
+        if (routeToFileMap.find(route) != routeToFileMap.end()) {
+            fileName = routeToFileMap.at(route);
+        }
+        requestedFile.open(fileName, std::ios::in);
+
+        if (requestedFile.is_open()) {           // always check whether the file is open
+            strStream << requestedFile.rdbuf();  // read the file
+        }
+        htmlFile = strStream.str();
+        // log(htmlFile);
+        oss << htmlFile.size() << "\n\n"
+            << htmlFile;
+
+        serverMessage = oss.str();
+        // htmlFile.clear();
+    } else if (method.compare("POST") == 0) {
+    } else if (method.compare("PUT") == 0) {
+    } else if (method.compare("DELETE") == 0) {
+    }
+}
+
 void DinoScale::DinoScale::sendResponse() {
     int bytesSent;
     long totalBytesSent = 0;
-    std::ostringstream oss;
-
-    std::string htmlFile = "<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>";
-    oss << "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: "
-        << htmlFile.size() << "\n\n"
-        << htmlFile;
-
-    serverMessage = oss.str();
 
     while (totalBytesSent < serverMessage.size()) {
         bytesSent = send(newSocket, serverMessage.c_str(), serverMessage.size(), 0);
@@ -120,7 +193,7 @@ void DinoScale::DinoScale::sendResponse() {
     }
 
     if (totalBytesSent == serverMessage.size()) {
-        log("------ Server Response sent to client ------\n");
+        log("------ Server Response sent to client ------");
     } else {
         log("Error sending response to client.");
     }
@@ -132,8 +205,20 @@ void DinoScale::DinoScale::closeServer() {
     WSACleanup();
 }
 
-DinoScale::DinoScale::~DinoScale() {
-    closeServer();
+void DinoScale::DinoScale::createRoute(std::string method, std::string route, std::string path) {
+    // todo : need to cause an error if unknown http verb is used
+    if (httpVerbToNumberMapping.find(method) == httpVerbToNumberMapping.end()) {
+        log("here");
+        exitWithError("http verb not defined");
+    }
+    log("create routes");
+    int verbPosition = httpVerbToNumberMapping.at(method);
+    if (routeToFileMapList[verbPosition].find(route) != routeToFileMapList[verbPosition].end()) {
+        exitWithError("route " + route + " is already defined");
+    } else {
+        log("route " + route + " added");
+        routeToFileMapList[verbPosition].insert({route, path});
+    }
 }
 
 template <typename T>
@@ -145,4 +230,8 @@ void DinoScale::DinoScale::exitWithError(std::string errorMessage) {
     log(WSAGetLastError());
     log(errorMessage);
     exit(1);
+}
+
+DinoScale::DinoScale::~DinoScale() {
+    closeServer();
 }
