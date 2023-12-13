@@ -59,5 +59,29 @@ class Logger {
      * Uses singleton design pattern.
      */
     static std::shared_ptr<Logger> loggerInstance;
+
+    /**
+     * @brief A function which generates the current time of the system in a
+     * human readable format.
+     *
+     * @return Current time of the system in a string format.
+     */
+    const std::string getLocalTime() {
+        std::tm localTime;
+
+        // current time of the system
+        auto currentTime = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(currentTime);
+        localtime_r(&in_time_t, &localTime);
+
+        // it was easier to manipulate, can also use other ways of string
+        // formatting.
+        std::stringstream date;
+        date << localTime.tm_mday << "/" << 1 + localTime.tm_mon << "/"
+             << 1900 + localTime.tm_year << " " << 1 + localTime.tm_hour << ":"
+             << 1 + localTime.tm_min << ":" << 1 + localTime.tm_sec;
+
+        return date.str();
+    }
 };
 #endif
