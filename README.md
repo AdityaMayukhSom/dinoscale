@@ -1,6 +1,6 @@
 # DinoScale
 
-DinoScale is a lightweight C++ backend web library that allows you to quickly create and deploy web applications. It provides an easy-to-use API for creating and managing routes, handling HTTP requests and responses, and listening for incoming connections.
+DinoScale is a lightweight and easy-to-use C++ backend web library that allows you to quickly create and deploy web applications. It's easy-to-use API for creating and managing routes, handling HTTP requests and responses, and serving files will make you create your backend faster than the speed of C++ code execution.
 
 ## Features
 
@@ -31,6 +31,6 @@ To compile the code into executable, use the following command (currently only w
 g++ -o main.exe main.cpp server.cpp -lsw2_32
 ```
 
-## Conclusion
+## Keep In Mind
 
-DinoScale is a lightweight and easy-to-use C++ backend web library that allows you to quickly create and deploy web applications. It provides a simple and intuitive API for creating and managing routes, handling HTTP requests and responses, and serving static files.
+This project is still in it's very early stage. The documentation provided in the readme file has not been standardized yet. Please look into the source code documentation if having trouble in usage. Documentation website coming soon.
