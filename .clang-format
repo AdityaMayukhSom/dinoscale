@@ -1,7 +1,14 @@
 BasedOnStyle: Google
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-IndentWidth:     4
+IndentWidth: 4
 ObjCBlockIndentWidth: 2
-PPIndentWidth:   -1
-TabWidth:        4
+PPIndentWidth: -1
+TabWidth: 4
+ColumnLimit: 80
+AllowShortEnumsOnASingleLine: false
+AlignConsecutiveMacros: AcrossComments
+AlignConsecutiveDeclarations: AcrossComments
+# SpacesInParentheses: true
+AlignArrayOfStructures: Left
+# SortIncludes: true
