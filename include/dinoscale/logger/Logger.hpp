@@ -33,4 +33,8 @@ enum class LogOutput {
     File
 };
 
+/**
+ * @brief  Logger Class Used to Output Details of Current Application Flow.
+ */
+class Logger {};
 #endif
