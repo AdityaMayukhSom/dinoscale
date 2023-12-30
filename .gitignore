@@ -31,4 +31,9 @@
 *.out
 *.app
 
+# project specific files
 build
+
+# this file containts the implementation of a simpler logger
+# in other languages, for reference.
+include/dinoscale/logger/ref_logger/*
