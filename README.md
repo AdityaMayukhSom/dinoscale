@@ -12,10 +12,10 @@ DinoScale is a lightweight and easy-to-use C++ backend web library that allows y
 
 ## Getting Started
 
-To get started with DinoScale, you need to download and include "server.hpp" inside the file containing main function. Once you have included DinoScale, you can use the following code snippet to create a basic server:
+To get started with DinoScale, you need to download and include "dinoscale.hpp" inside the file containing main function. Once you have included DinoScale, you can use the following code snippet to create a basic server:
 
 ```cpp
-#include "dinoscale.h"
+#include "dinoscale.hpp"
 
 int main(){
     DinoScale::DinoScale ds = DinoScale::DinoScale();
